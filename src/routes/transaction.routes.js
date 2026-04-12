@@ -7,7 +7,7 @@ const router = express.Router()
  * POST /api/transactions
  * - transaction details
  */
-router.post("/", transactionController.createTransaction)
+router.post("/", authMiddleware.authMiddleware, transactionController.createTransaction)
 
 
 /**
