@@ -56,7 +56,7 @@ async function sendTransactionEmail(userEmail, name, amount, toAccount) {
 async function sendReceivedFundsEmail(userEmail, name, amount, fromAccount) {
   const subject = `Amount Credited`;
   const text = `Hello ${name}, you have received $${amount} from account ${fromAccount}`;
-  const html = `<p>Hello ${name},</p> <p>You have received <strong>$${amount}</strong> from account <strong>${fromAccount}</strong></p>`;
+  const html = `<p>Hello ${name},</p> <p>You have received <strong>₹${amount}</strong> from account <strong>${fromAccount}</strong></p>`;
   await sendEmail(userEmail, subject, text, html);
 }
 

@@ -1,6 +1,7 @@
 const userModel = require("../model/user.model");
 const jwt = require("jsonwebtoken");
 const emailService = require('../services/email.service')
+const tokenBlackListModel = require('../model/tokenBlackList.model')
 /**
  * - register user
  * - POST /api/auth/register
@@ -28,7 +29,11 @@ async function userRegisterController(req, res) {
     expiresIn: "3d",
   });
 
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true, // Only over HTTPS
+    sameSite: "Strict",
+  });
 
   res.status(201).json({
     user: {
@@ -43,6 +48,7 @@ async function userRegisterController(req, res) {
 
 async function userLoginController(req, res) {
   const { name, email, password } = req.body;
+
   const user = await userModel.findOne({ email }).select("+password");
 
   if (!user) {
@@ -58,12 +64,16 @@ async function userLoginController(req, res) {
       message: "Password is incorrect",
     });
   }
-
+  
   const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
     expiresIn: "3d",
   });
 
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true, // Only over HTTPS
+    sameSite: "Strict",
+  });
 
   res.status(200).json({
     user: {
@@ -74,7 +84,34 @@ async function userLoginController(req, res) {
   });
 }
 
+/**
+ * - User Logout Controller
+ * - POST /api/auth/logout
+  */
+async function userLogoutController(req, res) {
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[ 1 ]
+
+    if (!token) {
+        return res.status(200).json({
+            message: "User logged out successfully"
+        })
+    }
+
+    await tokenBlackListModel.create({
+        token: token
+    })
+
+    res.clearCookie("token")
+
+    res.status(200).json({
+        message: "User logged out successfully"
+    })
+
+}
+
+
 module.exports = {
-  userRegisterController,
-  userLoginController,
-};
+    userRegisterController,
+    userLoginController,
+    userLogoutController
+}

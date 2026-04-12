@@ -77,10 +77,9 @@ async function createTransaction(req, res) {
   }
 
   //  4. Get from account balance
-  const balance = fromUserAccount.getBalance();
-
-  if (balance < amount) {
-    res.status(400).json({
+  const balance = await fromUserAccount.getBalance();
+  if (Number(balance) < Number(amount)) {
+    return res.status(400).json({
       message: `Insufficient balance in from Account. Current balance is ${balance}`,
     });
   }
